@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TORN">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TORN // NUMBER LOOKUP CONSOLE</title>
+<style>
+:root{--bg:#020202;--panel:#090909;--panel2:#0e0e10;--line:#25252b;--muted:#777782;--text:#f5f5f5;--red:#ff1b22;--red2:#ff4b51;--green:#31ff7a;--yellow:#ffc83d}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SFMono-Regular",Menlo,Monaco,Consolas,"Liberation Mono",monospace}body{overflow:hidden}.app{height:100%;display:flex;flex-direction:column;max-width:1500px;margin:auto;background:linear-gradient(135deg,#000,#080808,#000);position:relative}.app:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% -10%,rgba(255,20,25,.12),transparent 35%),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:auto,32px 32px,32px 32px;mask-image:linear-gradient(#000,transparent 92%)}
+.top{position:relative;z-index:2;padding:12px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2b1718;background:rgba(5,5,5,.92);backdrop-filter:blur(18px);padding-top:max(12px,env(safe-area-inset-top))}.brand{display:flex;align-items:center;gap:10px}.brand img{width:36px;height:36px;border-radius:9px;object-fit:cover}.brand b{font-size:13px;letter-spacing:2px}.brand small{display:block;color:#6f6f76;font-size:8px;margin-top:3px;letter-spacing:.8px}.state{font-size:8px;color:#666;display:flex;align-items:center;gap:6px}.state i{width:6px;height:6px;border-radius:50%;background:#3b3b40}.state.ok i{background:var(--green);box-shadow:0 0 8px var(--green)}.state.busy i{background:var(--yellow);box-shadow:0 0 8px var(--yellow);animation:pulse .8s infinite}.state.bad i{background:var(--red);box-shadow:0 0 8px var(--red)}
+.header{position:relative;z-index:1;padding:14px 15px 13px;border-bottom:1px solid #321517;background:linear-gradient(180deg,rgba(18,6,7,.9),rgba(5,5,5,.88))}.dots{display:flex;gap:7px;margin-bottom:10px}.dot{width:7px;height:7px;border-radius:50%}.r{background:#ff5f56;box-shadow:0 0 8px #ff5f56}.y{background:#ffbd2e;box-shadow:0 0 8px #ffbd2e}.g{background:#27c93f;box-shadow:0 0 8px #27c93f}.prompt{color:#777;font-size:9px;margin-left:5px}.prompt b{color:#ff555b}.ascii{color:#ff2a30;font-size:clamp(4px,1vw,8px);line-height:1.08;margin:0 0 7px;text-shadow:0 0 18px rgba(255,25,30,.3);white-space:pre}.sub{color:#777;font-size:9px;margin-bottom:12px}.sub strong{color:#ff5b60}
+.search{display:flex;gap:8px}.inputwrap{position:relative;flex:1}.inputwrap span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#ff444b;font-weight:700}input{width:100%;height:42px;border:1px solid #3b2527;border-radius:9px;background:#070707;color:#fff;outline:0;padding:0 12px 0 27px;font:600 13px inherit;transition:.18s}input:focus{border-color:#ff3238;box-shadow:0 0 0 3px rgba(255,30,35,.08),0 0 22px rgba(255,30,35,.12)}input::placeholder{color:#55555c}button{height:42px;border:0;border-radius:9px;padding:0 17px;font:700 10px inherit;letter-spacing:.3px;cursor:pointer}#search{background:linear-gradient(135deg,#ff171e,#ff555b);color:#100000;box-shadow:0 0 22px rgba(255,20,25,.2)}button:active{transform:scale(.98)}button:disabled{opacity:.55}
+.tools{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:8px}.pretty{font-size:8px;color:#686870;display:flex;align-items:center;gap:7px}.pretty input{display:none}.check{width:14px;height:14px;border:1px solid #39393f;border-radius:4px;display:grid;place-items:center}.pretty input:checked+.check{background:#ff242a;border-color:#ff242a}.pretty input:checked+.check:after{content:"✓";color:#090000;font-weight:900;font-size:9px}.tip{font-size:8px;color:#55555c}
+.results{position:relative;z-index:1;min-height:0;flex:1;padding:10px 10px 0;display:flex;flex-direction:column}
+.split-head{height:30px;flex:0 0 30px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.pane-title{display:flex;align-items:center;padding:0 10px;border:1px solid #2d2021;border-bottom:0;border-radius:8px 8px 0 0;background:#090909;color:#888;font-size:8px;letter-spacing:.8px}.pane-title span{color:#ff4d53;margin-left:4px}.split-results{min-height:0;flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.pane{min-width:0;min-height:0;display:flex;flex-direction:column;border:1px solid #2d2021;border-radius:0 0 9px 9px;background:#020202;overflow:hidden}.pane-bar{height:31px;flex:0 0 31px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-bottom:1px solid #21191a;background:#080808;color:#68686f;font-size:7px;letter-spacing:.6px}.pane-bar b{color:#aaa}.pane-body{position:relative;min-height:0;flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}.raw-body{overflow:hidden;background:#000}.raw-body iframe{width:100%;height:100%;min-height:300px;display:block;border:0;background:#000}.raw-body .empty{position:absolute;z-index:2;inset:0}.empty{min-height:100%;display:grid;place-items:center;padding:25px;text-align:center;background:radial-gradient(circle at 50% 42%,rgba(255,25,30,.06),transparent 33%),#020202}.empty .ring{width:38px;height:38px;border:1px solid #2b2021;border-top-color:#ff242a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}.empty h2{font-size:9px;letter-spacing:1px;color:#999;margin:0 0 7px}.empty p{max-width:360px;color:#4f4f55;font-size:8px;line-height:1.7;margin:0}.empty.hidden{display:none}.cards{padding:10px}.record{border:1px solid #252529;border-radius:10px;background:linear-gradient(145deg,#0b0b0c,#060606);margin-bottom:9px;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.25)}.record:last-child{margin-bottom:0}.recordtop{padding:9px 10px;border-bottom:1px solid #1e1e22;color:#777;font-size:8px;display:flex;justify-content:space-between}.recordtop strong{color:#ff555b}.lines{padding:10px}.line{font-size:11px;line-height:1.65;word-break:break-word;color:#ededee}.line .key{color:#777;margin-right:5px}.line .val{color:#f1f1f2}.line.alt .val{color:#ffb6b8}.notfound{text-align:center;padding:45px 20px;color:#696970}.notfound b{display:block;color:#ff555b;font-size:11px;margin-bottom:8px}.notfound span{font-size:8px}.install-btn{position:fixed;left:14px;bottom:47px;z-index:21;height:38px;padding:0 13px;border:1px solid #4a2022;border-radius:10px;background:#0a0808;color:#ff6469;font:700 8px inherit;letter-spacing:.4px;box-shadow:0 8px 25px #000,0 0 18px rgba(255,30,35,.1);cursor:pointer}.install-btn:hover{border-color:#ff343a;box-shadow:0 8px 28px #000,0 0 22px rgba(255,30,35,.18)}.install-btn:active{transform:scale(.97)}.locktg{display:flex;align-items:center;justify-content:center;gap:7px;margin:13px auto 0;color:#ff6268;text-decoration:none;font-size:8px;letter-spacing:.3px}.locktg svg{width:14px;height:14px;fill:#ff6268}.locktg:hover{text-decoration:underline}.footer{position:relative;z-index:1;height:34px;flex:0 0 34px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #241819;background:#050505;color:#47474e;font-size:7px;padding-bottom:env(safe-area-inset-bottom)}.tg{position:fixed;right:14px;bottom:48px;z-index:20;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#0a0a0a;border:1px solid #382224;box-shadow:0 8px 25px #000,0 0 18px rgba(255,30,35,.12)}.tg svg{width:18px;height:18px;fill:#ff5b60}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{opacity:.3;transform:scale(.65)}}
+@media(max-width:700px){.top{padding-left:11px;padding-right:11px}.header{padding:12px 11px}.ascii{font-size:4.5px}.search button{padding:0 13px}.results{padding:8px 7px 0}.line{font-size:10px}.tg{right:10px;bottom:46px}.install-btn{left:10px;bottom:46px}}
+@supports(padding:max(0px)){.top{padding-top:max(12px,env(safe-area-inset-top))}.footer{padding-bottom:max(0px,env(safe-area-inset-bottom))}}
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="lockbox">
+    <img class="locklogo" src="icon-192.png" alt="TORN">
+    <h1>TORN // LOCKED</h1>
+    <p>Private console access. Choose a built-in access key.<br>24H access expires automatically; permanent access stays on this device.</p>
+    <div class="pass"><input id="pass" type="password" autocomplete="current-password" placeholder="ACCESS PASSWORD"><button id="unlock">UNLOCK</button></div>
+    <div class="err" id="lockerr"></div>
+    <div class="loginopts"><span>LOCAL ONLY</span><span>NO BACKEND</span></div><a class="locktg" href="https://t.me/+cLbXt9Z8--4zNzQ1" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.4 3.2 2.9 10.3c-1.26.5-1.25 1.2-.23 1.52l4.75 1.48 1.82 5.67c.22.63.11.88.76.88.5 0 .72-.23.99-.5l2.3-2.23 4.78 3.53c.88.49 1.52.23 1.74-.82l3.14-14.8c.33-1.3-.5-1.9-1.55-1.43ZM8.15 12.95l10.77-6.8c.51-.31.98-.14.6.2l-8.7 7.85-.34 3.62-2.33-4.87Z"/></svg> CONTACT ADMIN FOR ACCESS</a>
+  </div>
+</div>
+<div class="app" id="app">
+  <div class="top"><div class="brand"><img src="icon-192.png" alt="TORN"><div><b>TORN</b><small>NUMBER LOOKUP CONSOLE</small></div></div><div class="state" id="state"><i></i><span id="stateText">LOCKED</span></div></div>
+  <section class="header">
+    <div class="dots"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="prompt">torn@lookup: <b>~</b> $ ready</span></div>
+    <pre class="ascii">████████╗ ██████╗ ██████╗ ███╗   ██╗
+╚══██╔══╝██╔═══██╗██╔══██╗████╗  ██║
+   ██║   ██║   ██║██████╔╝██╔██╗ ██║
+   ██║   ██║   ██║██╔══██╗██║╚██╗██║
+   ██║   ╚██████╔╝██║  ██║██║ ╚████║
+   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝</pre>
+    <div class="sub">Lookup Console · <strong>TORN</strong> · direct response formatter</div>
+    <div class="search"><div class="inputwrap"><span>›</span><input id="num" inputmode="numeric" type="tel" maxlength="10" autocomplete="off" placeholder="Enter 10 digit number..."></div><button id="search">SEARCH ↗</button></div>
+    <div class="tools"><label class="pretty"><input id="pretty" type="checkbox" checked><span class="check"></span>PRETTY PRINT</label><span class="tip" id="tip">ENTER NUMBER · PRESS ENTER</span></div>
+  </section>
+  <main class="results">
+  <div class="split-head">
+    <div class="pane-title">DIRECT API <span>// RAW JSON</span></div>
+    <div class="pane-title">FORMATTED <span>// PRETTY PRINT</span></div>
+  </div>
+  <div class="split-results">
+    <section class="pane">
+      <div class="pane-bar"><b>⚡ LIVE RESPONSE</b><span id="rawMeta">READY</span></div>
+      <div class="pane-body raw-body" id="rawBody">
+        <div class="empty mini"><div><div class="ring"></div><h2>WAITING FOR QUERY</h2><p>Raw API response will appear here immediately.</p></div></div>
+        <iframe id="rawFrame" title="Direct API JSON response" sandbox="allow-same-origin allow-scripts"></iframe>
+      </div>
+    </section>
+    <section class="pane">
+      <div class="pane-bar"><b>✦ ARRANGED DATA</b><span id="fmtMeta">WAITING</span></div>
+      <div class="pane-body" id="box">
+        <div class="empty mini"><div><div class="ring"></div><h2>WAITING FOR DATA</h2><p>Formatted records will appear here when JSON can be read by the browser.</p></div></div>
+      </div>
+    </section>
+  </div>
+</main>
+  <footer class="footer"><span>TORN © 2026 · DIRECT API LOAD</span><span>IOS / ANDROID · PWA</span></footer>
+</div>
+<button class="install-btn" id="installBtn" type="button">＋ INSTALL PWA</button>
+<a class="tg" href="https://t.me/+6opHLfvUiJdkNDZl" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M21.4 3.2 2.9 10.3c-1.26.5-1.25 1.2-.23 1.52l4.75 1.48 1.82 5.67c.22.63.11.88.76.88.5 0 .72-.23.99-.5l2.3-2.23 4.78 3.53c.88.49 1.52.23 1.74-.82l3.14-14.8c.33-1.3-.5-1.9-1.55-1.43ZM8.15 12.95l10.77-6.8c.51-.31.98-.14.6.2l-8.7 7.85-.34 3.62-.34 3.62-2.33-4.87Z"/></svg></a>
+<script>
+/* Client-side access only. Change these two strings before deployment. */
+const PASS_24H='TORN24';
+const PASS_PERMANENT='TORN-ADMIN';
+const API='https://info-api-redzone.vercel.app/api/lookup?type=num&query=';
+const LOCK_KEY='torn_perm_login_v1',TEMP_KEY='torn_24h_login_v1';
+let activeFetch=null;
+const $=id=>document.getElementById(id);
+function unlock(){const p=$('pass').value;if(p===PASS_PERMANENT){localStorage.setItem(LOCK_KEY,'1');openApp();return}if(p===PASS_24H){localStorage.setItem(TEMP_KEY,String(Date.now()+86400000));openApp();return}$('lockerr').textContent='INVALID ACCESS PASSWORD';$('pass').select()}
+function hasAccess(){return localStorage.getItem(LOCK_KEY)==='1'||Number(localStorage.getItem(TEMP_KEY)||0)>Date.now()}
+function openApp(){$('lock').classList.add('hide');$('stateText').textContent='READY';$('state').className='state ok'}
+$('unlock').onclick=unlock;$('pass').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});if(hasAccess())openApp();
+function state(c,t){$('state').className='state '+c;$('stateText').textContent=t}
+function escapeHtml(s){return String(s??'N/A').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function pick(o,...keys){for(const k of keys){if(o&&o[k]!==undefined&&o[k]!==null&&String(o[k]).trim()!=='')return o[k]}return 'N/A'}
+function clearRawLoading(){const e=$('rawBody').querySelector('.empty');if(e)e.classList.add('hidden')}
+function showRaw(url){const frame=$('rawFrame');frame.removeAttribute('src');requestAnimationFrame(()=>{frame.src=url});clearRawLoading();$('rawMeta').textContent='LIVE'}
+function setRawLoading(){const e=$('rawBody').querySelector('.empty');if(e)e.classList.remove('hidden');$('rawMeta').textContent='LOADING'}
+function render(data){
+ const root=data?.data??data;
+ const rows=Array.isArray(root?.data)?root.data:Array.isArray(root)?root:(root&&typeof root==='object'?[root]:[]);
+ const status=String(root?.status??data?.status??'').toLowerCase();const msg=root?.message??data?.message??'';
+ if(status==='error'||status==='not_found'||(!rows.length&&/not found|no data|error/i.test(String(msg)))){noData();return}
+ if(!rows.length){noData();return}
+ const cards=rows.map((r,i)=>{const name=pick(r,'name','full_name','fname');const father=pick(r,'father','father_name','fatherName','fathername');const address=pick(r,'address','addr');const alt=pick(r,'alt','alt_mobile','alternate','alternate_mobile');const circle=pick(r,'circle','operator','telecom_circle');const mobile=pick(r,'mobile','number','phone');return `<article class="record"><div class="recordtop"><span>RECORD ${String(i+1).padStart(2,'0')}</span><strong>${escapeHtml(mobile)}</strong></div><div class="lines"><div class="line">├👤 <span class="key">ɴᴀᴍᴇ:</span><span class="val">${escapeHtml(name)}</span></div><div class="line">├👨 <span class="key">ꜰᴀᴛʜᴇʀ:</span><span class="val">${escapeHtml(father)}</span></div><div class="line">├🏠 <span class="key">ᴀᴅᴅʀᴇꜱꜱ:</span><span class="val">${escapeHtml(address)}</span></div><div class="line alt">├📲 <span class="key">ᴀʟᴛ ᴍᴏʙɪʟᴇ:</span><span class="val">${escapeHtml(alt)}</span></div><div class="line">└📡 <span class="key">ᴄɪʀᴄʟᴇ:</span><span class="val">${escapeHtml(circle)}</span></div></div></article>`}).join('');
+ $('box').innerHTML='<div class="cards">'+cards+'</div>';$('fmtMeta').textContent=rows.length+' RECORD'+(rows.length===1?'':'S');state('ok','RESULT READY');$('tip').textContent='DIRECT + FORMATTED'}
+function noData(){$('box').innerHTML='<div class="notfound"><b>NO DATA FOUND</b><span>The API returned no usable records for this query.</span></div>';$('fmtMeta').textContent='0 RECORDS';state('bad','NO DATA');$('tip').textContent='NO MATCHING DATA'}
+function resetFormatted(){$('box').innerHTML='<div class="empty mini"><div><div class="ring"></div><h2>READING JSON</h2><p>The second pane is arranging the API data…</p></div></div>';$('fmtMeta').textContent='PARSING'}
+async function parseFormatted(url){if(activeFetch)activeFetch.abort();const controller=new AbortController();activeFetch=controller;try{const res=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});if(!res.ok)throw new Error('HTTP '+res.status);const text=await res.text();let json;try{json=JSON.parse(text)}catch(e){throw new Error('NON_JSON')}if(activeFetch===controller)render(json)}catch(e){if(e.name==='AbortError')return;$('box').innerHTML='<div class="notfound"><b>DIRECT RESPONSE IS READY</b><span>Browser CORS prevented the formatted pane from reading this response. The raw JSON pane above still shows the live API result.</span></div>';$('fmtMeta').textContent='CORS';state('ok','RAW READY');$('tip').textContent='RAW FAST · FORMAT UNAVAILABLE'}finally{if(activeFetch===controller)activeFetch=null}}
+function search(){const n=$('num').value.trim();if(!/^\d{10}$/.test(n)){state('bad','INVALID');$('tip').textContent='ENTER EXACTLY 10 DIGITS';$('num').focus();return}const url=API+encodeURIComponent(n);setRawLoading();showRaw(url);resetFormatted();state('busy','QUERY SENT');$('search').disabled=false;$('search').textContent='SEARCH ↗';$('meta').textContent=n;$('tip').textContent='RAW RESPONSE LIVE · FORMATTING…';parseFormatted(url)}
+$('search').onclick=search;$('num').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,10));$('num').addEventListener('keydown',e=>{if(e.key==='Enter')search()});
+let deferredInstall=null;const installBtn=$('installBtn');window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;installBtn.hidden=false});installBtn.onclick=async()=>{if(deferredInstall){deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;installBtn.hidden=true}else{alert('On iPhone: tap Share → Add to Home Screen. On Android Chrome: tap ⋮ → Install app / Add to Home screen.')}};window.addEventListener('appinstalled',()=>{installBtn.hidden=true});if(window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true)installBtn.hidden=true;
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+</script>
+</body></html>
