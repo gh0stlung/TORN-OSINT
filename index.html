@@ -1,446 +1,74 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080808">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TORN">
-<link rel="manifest" href="./manifest.webmanifest">
-<title>TORN // NUMBER LOOKUP CONSOLE</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070707"><link rel="manifest" href="./manifest.webmanifest">
+<title>TORN_D — Secure Console</title>
 <style>
-:root{
-  --bg:#050505; --panel:#0b0b0b; --panel2:#101010; --line:#262626;
-  --text:#f2f2f2; --muted:#8d8d8d; --red:#ff1d32; --red2:#b90018;
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
-body{min-height:100dvh;overflow-x:hidden}
-button,input,textarea{font:inherit}
-button{touch-action:manipulation}
-
-/* LOCK SCREEN: completely separate fixed layer */
-#lockScreen{
-  position:fixed; inset:0; z-index:2147483647;
-  display:flex; align-items:center; justify-content:center;
-  padding:max(22px,env(safe-area-inset-top)) 18px max(22px,env(safe-area-inset-bottom));
-  background:#050505;
-}
-#lockScreen.hidden{display:none}
-.lock-card{
-  width:min(440px,100%); padding:26px 20px 22px;
-  border:1px solid #303030; border-radius:18px;
-  background:linear-gradient(180deg,#111,#080808);
-  box-shadow:0 24px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,0,25,.04) inset;
-}
-.lock-logo{
-  width:84px;height:84px;border-radius:50%;margin:0 auto 18px;
-  display:grid;place-items:center;border:2px solid #9c0017;
-  color:#fff;font-size:20px;font-weight:900;letter-spacing:-2px;
-  background:radial-gradient(circle,#351018 0,#090909 65%);
-  box-shadow:0 0 28px rgba(255,20,40,.16);
-}
-.lock-title{text-align:center;font-size:21px;font-weight:900;letter-spacing:.04em}
-.lock-sub{text-align:center;color:#9a9a9a;font-size:11px;line-height:1.55;margin:10px 0 18px}
-.lock-input{
-  width:100%;height:48px;padding:0 13px;border-radius:10px;
-  border:1px solid #2d2d2d;background:#050505;color:#fff;outline:none;
-}
-.lock-input:focus{border-color:#9d1020;box-shadow:0 0 0 3px rgba(255,0,30,.08)}
-.unlock{
-  width:100%;height:48px;margin-top:10px;border:0;border-radius:10px;
-  background:linear-gradient(180deg,#ff3347,#c50019);color:white;font-weight:900;
-}
-.lock-error{min-height:18px;text-align:center;color:#ff5666;font-size:10px;margin-top:8px}
-.lock-note{text-align:center;color:#777;font-size:9px;margin-top:12px}
-.admin{
-  display:block;text-align:center;margin-top:15px;color:#ff5263;text-decoration:none;font-size:10px
-}
-.admin:hover{text-decoration:underline}
-
-/* APP is hidden until unlocked */
-#app{display:none;min-height:100dvh}
-#app.unlocked{display:block}
-.app-shell{width:min(1500px,100%);margin:0 auto;padding:16px}
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:10px 2px 16px;border-bottom:1px solid var(--line)
-}
-.brand{display:flex;align-items:center;gap:11px;min-width:0}
-.brand-mark{
-  width:48px;height:48px;flex:0 0 48px;border-radius:50%;display:grid;place-items:center;
-  border:1px solid #850014;background:#0b0b0b;color:#ff2438;font-weight:1000
-}
-.brand h1{margin:0;font-size:18px;letter-spacing:.04em;white-space:nowrap}
-.brand small{color:#777;font-size:9px}
-.top-actions{display:flex;gap:8px}
-.small-btn{
-  min-height:40px;padding:0 12px;border-radius:9px;border:1px solid #303030;
-  background:#101010;color:#ddd
-}
-.telegram{color:#ff5263;text-decoration:none;font-size:10px}
-
-.searchbar{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin:15px 0 12px
-}
-.number{
-  width:100%;height:48px;border:1px solid #303030;border-radius:10px;
-  background:#090909;color:#fff;padding:0 14px;outline:none
-}
-.number:focus{border-color:#a30d20}
-.search{
-  height:48px;padding:0 18px;border:0;border-radius:10px;background:#e8172d;color:#fff;font-weight:900
-}
-.search:disabled{opacity:.55}
-
-.install{
-  display:none;margin:0 0 14px;width:100%;height:42px;border:1px solid #51212a;
-  border-radius:9px;background:#12090b;color:#ff6573;font-weight:800
-}
-
-.panes{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch
-}
-.panel{
-  min-width:0;border:1px solid #222;border-radius:12px;overflow:hidden;background:#080808;
-  min-height:420px
-}
-.panel-head{
-  height:42px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 12px;border-bottom:1px solid #222;background:#0d0d0d
-}
-.panel-title{font-size:9px;color:#cfcfcf;letter-spacing:.1em}
-.status{font-size:8px;color:#6e6e6e}
-.raw-frame{
-  display:block;width:100%;height:calc(100% - 42px);min-height:378px;border:0;background:#050505
-}
-.format-body{padding:12px;min-height:378px}
-.format-status{font-size:9px;color:#777;margin-bottom:10px}
-.cards{display:grid;gap:8px}
-.field{
-  display:grid;grid-template-columns:130px minmax(0,1fr);gap:10px;
-  padding:10px;border:1px solid #202020;border-radius:8px;background:#0d0d0d
-}
-.field-label{color:#ff5363;font-size:9px;font-weight:900;text-transform:uppercase}
-.field-value{color:#eee;font-size:11px;word-break:break-word;white-space:pre-wrap}
-.empty{color:#777;font-size:10px;line-height:1.6;padding:12px 0}
-.install-space{height:10px}
-.footer{padding:14px 2px 4px;color:#555;font-size:8px;text-align:center}
-
-/* Mobile + tablet: NEVER squeeze the two boxes */
-@media (max-width: 820px){
-  .app-shell{padding:12px}
-  .panes{grid-template-columns:1fr}
-  .panel{min-height:360px}
-  .raw-frame{min-height:318px}
-  .format-body{min-height:318px}
-}
-@media (max-width:560px){
-  .topbar{align-items:flex-start}
-  .brand h1{font-size:15px}
-  .brand-mark{width:42px;height:42px;flex-basis:42px}
-  .top-actions .small-btn{display:none}
-  .searchbar{grid-template-columns:1fr}
-  .search{width:100%}
-  .field{grid-template-columns:1fr;gap:5px}
-  .panel-head{height:40px}
-  .raw-frame{height:calc(100% - 40px)}
-}
-@media (max-width:380px){
-  .app-shell{padding:9px}
-  .brand small{font-size:8px}
-  .lock-card{padding:22px 15px}
-}
-@media (prefers-reduced-motion:reduce){
-  *{scroll-behavior:auto!important;transition:none!important}
-}
+:root{color-scheme:dark;--bg:#070707;--panel:#101010;--line:#292929;--text:#f2f2f2;--muted:#999;--red:#ff3048;--green:#52d69a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid #383838;border-radius:9px;padding:10px 13px;background:#191919;color:#fff}button.primary{background:var(--red);border-color:var(--red);font-weight:700}button:disabled{opacity:.5;cursor:not-allowed}input,textarea,select{width:100%;background:#080808;border:1px solid #343434;border-radius:9px;padding:11px;color:#fff}textarea{min-height:120px;resize:vertical}label{display:block;color:#bbb;font-size:12px;margin:10px 0 6px}.wrap{max-width:1250px;margin:auto;padding:18px}.brand{display:flex;align-items:center;gap:12px}.mark{width:45px;height:45px;display:grid;place-items:center;border:1px solid #8c1022;border-radius:50%;color:#ff3048;font-weight:900}.brand h1{font-size:20px;margin:0}.muted{color:var(--muted);font-size:12px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line)}.card{border:1px solid var(--line);background:var(--panel);border-radius:13px;padding:16px;margin-top:16px}.hidden{display:none!important}.auth{max-width:430px;margin:10vh auto}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.tabs{display:flex;gap:8px;overflow:auto;margin-top:16px}.tabs button.active{border-color:var(--red);color:#ff7b8b}.metric{font-size:24px;font-weight:800}.list{display:grid;gap:8px;margin-top:12px}.item{border:1px solid #303030;border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.item small{display:block;color:var(--muted);margin-top:4px}.pill{font-size:11px;border:1px solid #444;padding:4px 7px;border-radius:99px}.ok{color:var(--green)}.bad{color:#ff6475}.output{white-space:pre-wrap;overflow-wrap:anywhere;background:#050505;border:1px solid #252525;border-radius:9px;padding:12px;min-height:110px;max-height:420px;overflow:auto;font:12px ui-monospace,monospace}.field{padding:10px;border:1px solid #292929;border-radius:8px;margin-top:8px}.field b{display:block;color:#ff7180;font-size:11px;text-transform:uppercase;margin-bottom:5px}.notice{line-height:1.55;color:#bbb;font-size:12px}.section-title{font-size:15px;font-weight:750;margin:0 0 8px}.footer{padding:24px 0;text-align:center;color:#777;font-size:11px}@media(max-width:700px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.top{align-items:flex-start}.brand h1{font-size:17px}.metric{font-size:21px}}
 </style>
 </head>
-<body>
+<body><div class="wrap">
+<header class="top"><div class="brand"><div class="mark">T_D</div><div><h1>TORN_D Console</h1><div class="muted">SECURE ADMIN • API CONTROL • JSON INSPECTOR</div></div></div><div class="row" style="flex:0 0 auto"><span id="sessionLabel" class="muted">Not signed in</span><button id="logout" class="hidden">Sign out</button></div></header>
 
-<section id="lockScreen" aria-label="Locked console">
-  <div class="lock-card">
-    <div class="lock-logo">TORN</div>
-    <div class="lock-title">TORN // LOCKED</div>
-    <div class="lock-sub">
-      Private console access.<br>
-      24H access expires automatically; permanent access stays on this device.
-    </div>
-    <input id="accessPassword" class="lock-input" type="password" autocomplete="off" placeholder="ACCESS PASSWORD">
-    <button id="unlockBtn" class="unlock">UNLOCK</button>
-    <div id="lockError" class="lock-error"></div>
-    <a class="admin" href="https://t.me/+cLbXt9Z8--4zNzQ1" target="_blank" rel="noopener">CONTACT ADMIN FOR ACCESS</a>
-    <div class="lock-note">LOCAL ONLY • NO BACKEND AUTHENTICATION</div>
-  </div>
+<section id="setup" class="card">
+<h2 class="section-title">Connect your Supabase project</h2>
+<p class="notice">Enter your Supabase project URL and publishable key. These are saved only in this browser. Never enter a service-role/secret key here.</p>
+<div class="grid"><div><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"></div><div><label>Supabase publishable key</label><input id="sbKey" placeholder="sb_publishable_…"></div></div>
+<div class="row" style="margin-top:12px"><button id="connect" class="primary">Connect</button><button id="forgetConfig">Clear config</button></div><p id="setupMsg" class="muted"></p>
 </section>
 
-<main id="app">
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">TRN</div>
-        <div>
-          <h1>TORN // NUMBER LOOKUP CONSOLE</h1>
-          <small>DIRECT RESPONSE + SIMPLE JSON FORMATTER</small>
-        </div>
-      </div>
-      <div class="top-actions">
-        <a class="telegram" href="https://t.me/+6opHLfvUiJdkNDZl" target="_blank" rel="noopener">TELEGRAM</a>
-        <button id="logoutBtn" class="small-btn">LOCK</button>
-      </div>
-    </header>
+<section id="login" class="card auth hidden">
+<h2 class="section-title">Admin sign in</h2><p class="notice">Use the admin account created in Supabase Authentication. There is no hardcoded browser password.</p>
+<label>Email</label><input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
+<label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Supabase Auth password">
+<button id="signin" class="primary" style="width:100%;margin-top:12px">Sign in</button><p id="loginMsg" class="muted"></p>
+</section>
 
-    <form id="searchForm" class="searchbar">
-      <input id="numberInput" class="number" inputmode="numeric" autocomplete="off" placeholder="ENTER NUMBER" aria-label="Number">
-      <button id="searchBtn" class="search" type="submit">SEARCH ↗</button>
-    </form>
+<section id="dashboard" class="hidden">
+<div class="grid">
+<div class="card"><div class="muted">BACKEND HEALTH</div><div id="healthMetric" class="metric">Checking…</div><div id="healthDetail" class="muted">This checks TORN_D itself, not third-party providers.</div></div>
+<div class="card"><div class="muted">ADMIN SESSION</div><div id="adminMetric" class="metric">Verifying…</div><div id="adminDetail" class="muted">Server and database role check</div></div>
+</div>
+<nav class="tabs"><button class="active" data-tab="overview">Overview</button><button data-tab="keys">Access keys</button><button data-tab="apis">API integrations</button><button data-tab="inspector">JSON inspector</button></nav>
+<section id="tab-overview" class="card"><h2 class="section-title">Overview</h2><p class="notice">Your current site had local-only passwords and a direct third-party lookup request. This version removes those hardcoded passwords and adds an authenticated admin shell. Only connect APIs and datasets you are authorized to access.</p><div class="grid"><div><div class="muted">Saved access-key records</div><div id="keyCount" class="metric">—</div></div><div><div class="muted">Configured API records</div><div id="apiCount" class="metric">—</div></div></div><p id="overviewMsg" class="muted"></p></section>
 
-    <button id="installBtn" class="install">＋ INSTALL TORN APP</button>
+<section id="tab-keys" class="card hidden"><h2 class="section-title">Access key management</h2><p class="notice">Keys are generated here and only their SHA-256 hashes are saved. The plaintext is shown once. Keys are managed by the backend. Protecting a separate user-facing service with these keys requires wiring that service to key validation.</p><div class="grid"><div><label>Key label / user</label><input id="keyLabel" placeholder="e.g. Operator 01"></div><div><label>Duration</label><select id="keyDuration"><option value="2h">2 hours</option><option value="24h" selected>24 hours</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="custom">Custom date/time</option><option value="permanent">Permanent</option></select></div></div><div id="customExpiryWrap" class="hidden"><label>Custom expiry (local time)</label><input id="customExpiry" type="datetime-local"></div><div class="row" style="margin-top:12px"><button id="createKey" class="primary">Generate access key</button><button id="refreshKeys">Refresh list</button></div><div id="newKeyOutput" class="hidden field"><b>Copy this key now — it won't be shown again</b><div id="newKeyText" class="output"></div><button id="copyKey">Copy key</button></div><div id="keysList" class="list"></div><p id="keysMsg" class="muted"></p></section>
 
-    <section class="panes">
-      <article class="panel">
-        <div class="panel-head">
-          <span class="panel-title">DIRECT API / RAW RESPONSE</span>
-          <span id="rawStatus" class="status">READY</span>
-        </div>
-        <iframe id="rawFrame" class="raw-frame" title="Direct API response"></iframe>
-      </article>
+<section id="tab-apis" class="card hidden"><h2 class="section-title">Authorized API integrations</h2><p class="notice">Add metadata for an API you are authorized to use. This starter deliberately does not proxy arbitrary URLs or run phone-number-to-private-identity lookups. Health status is a manually recorded state until a domain allowlist and server-side checker are configured.</p><div class="grid"><div><label>Integration name</label><input id="apiName" placeholder="Provider / internal service"></div><div><label>API base URL (metadata only)</label><input id="apiUrl" type="url" placeholder="https://api.example.com"></div></div><div class="row" style="margin-top:12px"><button id="addApi" class="primary">Add integration</button><button id="refreshApis">Refresh list</button></div><div id="apisList" class="list"></div><p id="apisMsg" class="muted"></p></section>
 
-      <article class="panel">
-        <div class="panel-head">
-          <span class="panel-title">FORMATTED JSON</span>
-          <span id="formatStatus" class="status">READY</span>
-        </div>
-        <div class="format-body">
-          <div id="formatStatusText" class="format-status">Enter a value and search.</div>
-          <div id="cards" class="cards"></div>
-        </div>
-      </article>
-    </section>
-
-    <div class="footer">TORN • RESPONSIVE FOR ANDROID, IPHONE, TABLET & PC</div>
-  </div>
-</main>
-
-<script>
-(() => {
-  "use strict";
-
-  const API_BASE = "https://info-api-redzone.vercel.app/api/lookup?type=num&query=";
-  const PASSWORD_24H = "TORN24";
-  const PASSWORD_PERMANENT = "TORN-ADMIN";
-
-  const $ = id => document.getElementById(id);
-  const lock = $("lockScreen");
-  const app = $("app");
-  const access = $("accessPassword");
-  const unlock = $("unlockBtn");
-  const error = $("lockError");
-  const searchForm = $("searchForm");
-  const numberInput = $("numberInput");
-  const searchBtn = $("searchBtn");
-  const rawFrame = $("rawFrame");
-  const rawStatus = $("rawStatus");
-  const formatStatus = $("formatStatus");
-  const formatStatusText = $("formatStatusText");
-  const cards = $("cards");
-  const installBtn = $("installBtn");
-
-  let formatController = null;
-  let deferredInstall = null;
-
-  function unlockApp(mode){
-    const now = Date.now();
-    if(mode === "24h") localStorage.setItem("torn_24h_until", String(now + 24*60*60*1000));
-    if(mode === "permanent") localStorage.setItem("torn_permanent", "1");
-    lock.classList.add("hidden");
-    app.classList.add("unlocked");
-    error.textContent = "";
-    access.value = "";
-  }
-
-  function checkAccess(){
-    const permanent = localStorage.getItem("torn_permanent") === "1";
-    const until = Number(localStorage.getItem("torn_24h_until") || 0);
-    if(permanent || until > Date.now()){
-      lock.classList.add("hidden");
-      app.classList.add("unlocked");
-    }else{
-      localStorage.removeItem("torn_24h_until");
-      lock.classList.remove("hidden");
-      app.classList.remove("unlocked");
-    }
-  }
-
-  function doUnlock(){
-    const value = access.value.trim();
-    if(value === PASSWORD_24H) return unlockApp("24h");
-    if(value === PASSWORD_PERMANENT) return unlockApp("permanent");
-    error.textContent = "INVALID ACCESS KEY";
-  }
-
-  unlock.addEventListener("click", doUnlock);
-  access.addEventListener("keydown", e => { if(e.key === "Enter") doUnlock(); });
-
-  $("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("torn_24h_until");
-    localStorage.removeItem("torn_permanent");
-    app.classList.remove("unlocked");
-    lock.classList.remove("hidden");
-    access.focus();
-  });
-
-  function labelize(key){
-    const map = {
-      name:"Name", fname:"Father Name", father:"Father Name", father_name:"Father Name",
-      address:"Address", mobile:"Mobile", number:"Number", circle:"Circle",
-      email:"Email", aadhaar:"Aadhaar", aadhar:"Aadhaar"
-    };
-    return map[key.toLowerCase()] || key.replace(/[_-]+/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-  }
-
-  function flatten(value, prefix="", out=[]){
-    if(value === null || value === undefined) return out;
-    if(Array.isArray(value)){
-      value.forEach((v,i)=>flatten(v, prefix ? prefix + " " + (i+1) : String(i+1), out));
-      return out;
-    }
-    if(typeof value === "object"){
-      Object.entries(value).forEach(([k,v]) => {
-        const key = prefix && /^\d+$/.test(prefix) ? k : (prefix ? prefix + " / " + k : k);
-        if(v && typeof v === "object") flatten(v,key,out);
-        else out.push({key:k, value:v});
-      });
-      return out;
-    }
-    out.push({key:prefix || "Value", value});
-    return out;
-  }
-
-  function renderJson(data){
-    cards.innerHTML = "";
-    let rows = flatten(data);
-
-    // Prefer useful human-readable fields first.
-    const preferred = ["name","fname","father","father_name","address","email","mobile","number","circle","aadhaar","aadhar"];
-    rows.sort((a,b) => {
-      const ai = preferred.indexOf(String(a.key).toLowerCase());
-      const bi = preferred.indexOf(String(b.key).toLowerCase());
-      return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi);
-    });
-
-    // Prevent duplicate repeated object keys from flooding the pane.
-    const seen = new Set();
-    rows = rows.filter(r => {
-      const k = String(r.key).toLowerCase();
-      const id = k + "::" + String(r.value);
-      if(seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    }).slice(0,80);
-
-    if(!rows.length){
-      formatStatusText.textContent = "JSON received, but no scalar fields were found.";
-      return;
-    }
-
-    rows.forEach(row => {
-      const item = document.createElement("div");
-      item.className = "field";
-      const lab = document.createElement("div");
-      lab.className = "field-label";
-      lab.textContent = labelize(String(row.key));
-      const val = document.createElement("div");
-      val.className = "field-value";
-      val.textContent = String(row.value);
-      item.append(lab,val);
-      cards.appendChild(item);
-    });
-    formatStatusText.textContent = rows.length + " fields formatted.";
-  }
-
-  async function formatRequest(url){
-    if(formatController) formatController.abort();
-    formatController = new AbortController();
-    formatStatus.textContent = "READING";
-    formatStatusText.textContent = "Reading JSON…";
-    cards.innerHTML = "";
-
-    try{
-      const response = await fetch(url, {
-        method:"GET",
-        cache:"no-store",
-        signal:formatController.signal,
-        headers:{Accept:"application/json,text/plain,*/*"}
-      });
-      const text = await response.text();
-      if(!response.ok) throw new Error("HTTP " + response.status);
-      let data;
-      try { data = JSON.parse(text); }
-      catch { throw new Error("Response was not valid JSON"); }
-      renderJson(data);
-      formatStatus.textContent = "DONE";
-    }catch(e){
-      if(e.name === "AbortError") return;
-      formatStatus.textContent = "RAW ONLY";
-      formatStatusText.textContent = "The browser could not read the API for formatting (" + e.message + "). The direct API pane is still independent.";
-    }
-  }
-
-  searchForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const value = numberInput.value.trim();
-    if(!value) return;
-
-    // The raw response is started immediately and is NEVER tied to formatter loading.
-    const url = API_BASE + encodeURIComponent(value);
-    rawStatus.textContent = "OPENING";
-    rawFrame.src = url;
-
-    // Search button is only briefly disabled while dispatching; it is always reusable.
-    searchBtn.disabled = true;
-    searchBtn.textContent = "OPENED ✓";
-    setTimeout(() => {
-      searchBtn.disabled = false;
-      searchBtn.textContent = "SEARCH ↗";
-    }, 250);
-
-    // Formatter runs independently.
-    formatRequest(url);
-  });
-
-  // Keep the install control visible on iPhone/iPad too; those devices use
-  // Share → Add to Home Screen instead of beforeinstallprompt.
-  installBtn.style.display = "block";
-  window.addEventListener("beforeinstallprompt", e => {
-    e.preventDefault();
-    deferredInstall = e;
-  });
-
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(() => {});
-    });
-  }
-
-  installBtn.addEventListener("click", async () => {
-    if(!deferredInstall){
-      alert("On iPhone/iPad: use Share → Add to Home Screen. On Android/Chrome: use the browser menu → Install app.");
-      return;
-    }
-    deferredInstall.prompt();
-    await deferredInstall.userChoice;
-    deferredInstall = null;
-    installBtn.style.display = "none";
-  });
-
-  rawFrame.addEventListener("load", () => {
-    rawStatus.textContent = "LOADED";
-  });
-
-  checkAccess();
-})();
+<section id="tab-inspector" class="card hidden"><h2 class="section-title">Raw JSON + formatted output</h2><p class="notice">Paste a response from an API or dataset you are authorized to access. This tool formats data locally in your browser and does not send the pasted JSON to a server.</p><label>Raw JSON</label><textarea id="jsonInput" placeholder='{"status":"ok","items":[{"label":"Example"}]}'></textarea><div class="row" style="margin-top:10px"><button id="formatJson" class="primary">Format JSON</button><button id="clearJson">Clear</button></div><div class="grid" style="margin-top:12px"><div><h3 class="section-title">Raw response</h3><pre id="rawOutput" class="output">Waiting for JSON…</pre></div><div><h3 class="section-title">Formatted fields</h3><div id="formattedOutput" class="output">Waiting for JSON…</div></div></div><p id="jsonMsg" class="muted"></p></section>
+</section>
+<div class="footer">TORN_D • Secure starter • No hardcoded admin password</div>
+</div>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const $=id=>document.getElementById(id);let sb=null,session=null;
+const configUrl=localStorage.getItem("tornd_sb_url")||"",configKey=localStorage.getItem("tornd_sb_key")||"";
+$("sbUrl").value=configUrl;$("sbKey").value=configKey;
+function msg(id,t){$(id).textContent=t}
+function show(id,on){$(id).classList.toggle("hidden",!on)}
+function expiry(hours){return new Date(Date.now()+Number(hours)*3600000).toISOString()}
+function randomKey(){const a=new Uint8Array(24);crypto.getRandomValues(a);return "TORND-"+Array.from(a,b=>b.toString(16).padStart(2,"0")).join("").toUpperCase()}
+async function hashKey(v){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("")}
+function safe(v){return String(v??"")}
+function activeTab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));document.querySelectorAll('[id^="tab-"]').forEach(s=>s.classList.toggle("hidden",s.id!=="tab-"+name))}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>activeTab(b.dataset.tab)));
+function connect(){const url=$("sbUrl").value.trim().replace(/\/+$/,""),key=$("sbKey").value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key){msg("setupMsg","Enter a valid Supabase URL and publishable key.");return}localStorage.setItem("tornd_sb_url",url);localStorage.setItem("tornd_sb_key",key);sb=createClient(url,key);msg("setupMsg","Connected. Sign in with your Supabase Auth admin account.");show("login",true);msg("sessionLabel","Ready to sign in")}
+$("connect").onclick=connect;$("forgetConfig").onclick=()=>{localStorage.removeItem("tornd_sb_url");localStorage.removeItem("tornd_sb_key");$("sbUrl").value="";$("sbKey").value="";sb=null;show("login",false);show("dashboard",false);msg("setupMsg","Configuration cleared from this browser.")};
+if(configUrl&&configKey){try{sb=createClient(configUrl,configKey);show("login",true);msg("setupMsg","Supabase configuration loaded from this browser.")}catch{}}
+$("signin").onclick=async()=>{if(!sb){msg("loginMsg","Connect Supabase first.");return}msg("loginMsg","Signing in…");const {data,error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){msg("loginMsg",error.message);return}session=data.session;await loadDashboard()};
+$("logout").onclick=async()=>{if(sb)await sb.auth.signOut();session=null;show("dashboard",false);show("login",true);show("logout",false);msg("sessionLabel","Signed out")};
+async function apiAdmin(path, options={}){const {data}=await sb.auth.getSession();const token=data.session?.access_token;if(!token)throw new Error("Please sign in again.");const r=await fetch(path,{...options,headers:{"Content-Type":"application/json","Authorization":"Bearer "+token,...(options.headers||{})}});const j=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j}
+async function loadDashboard(){const {data}=await sb.auth.getSession();session=data.session;if(!session){show("login",true);return}show("login",false);show("dashboard",true);show("logout",true);msg("sessionLabel",session.user.email||"Signed in");$("adminMetric").textContent="Checking…";try{await apiAdmin("/api/admin/status")}catch(e){$("adminMetric").textContent="DENIED";$("adminDetail").textContent=e.message;show("dashboard",false);show("login",true);msg("loginMsg","Admin verification failed: "+e.message);await sb.auth.signOut();return}$("adminMetric").textContent="ADMIN ✓";$("adminDetail").textContent="Verified by the TORN_D backend";try{const r=await fetch("/health",{cache:"no-store"});const j=await r.json();$("healthMetric").textContent=r.ok&&j.status==="ok"?"ONLINE":"ERROR";$("healthMetric").className="metric "+(r.ok?"ok":"bad");$("healthDetail").textContent=j.service+" · "+j.timestamp}catch{$("healthMetric").textContent="NOT DEPLOYED";$("healthDetail").textContent="Deploy the /health route to this Vercel project."}await Promise.all([loadKeys(),loadApis()])}
+async function loadKeys(){let data;try{({items:data}=await apiAdmin("/api/admin/keys"))}catch(e){msg("keysMsg",e.message);return} $("keyCount").textContent=(data||[]).length;$("keysList").innerHTML="";(data||[]).forEach(k=>{const d=document.createElement("div");d.className="item";const left=document.createElement("div"),right=document.createElement("div");left.textContent=k.label;const sm=document.createElement("small");sm.textContent=k.is_permanent?"Permanent":("Expires "+new Date(k.expires_at).toLocaleString());left.append(sm);const badge=document.createElement("span");badge.className="pill "+(k.is_active?"ok":"bad");badge.textContent=k.is_active?"ACTIVE":"REVOKED";right.append(badge);const btn=document.createElement("button");btn.textContent=k.is_active?"Revoke":"Activate";btn.onclick=async()=>{try{await apiAdmin("/api/admin/keys",{method:"PATCH",body:JSON.stringify({id:k.id,is_active:!k.is_active})});await loadKeys()}catch(e){msg("keysMsg",e.message)}};right.append(btn);d.append(left,right);$("keysList").append(d)})}
+$("keyDuration").onchange=()=>show("customExpiryWrap",$("keyDuration").value==="custom");
+$("createKey").onclick=async()=>{const label=$("keyLabel").value.trim();if(!label){msg("keysMsg","Enter a label for this key.");return}const dur=$("keyDuration").value;let body={label,duration:dur};if(dur==="custom"){const val=$("customExpiry").value;if(!val||new Date(val)<=new Date()){msg("keysMsg","Choose a future expiry time.");return}body.expires_at=new Date(val).toISOString()}try{const result=await apiAdmin("/api/admin/keys",{method:"POST",body:JSON.stringify(body)});$("newKeyText").textContent=result.key;show("newKeyOutput",true);msg("keysMsg","Key saved by backend. Copy it now; plaintext is not stored.");await loadKeys()}catch(e){msg("keysMsg",e.message)}};
+$("copyKey").onclick=async()=>{try{await navigator.clipboard.writeText($("newKeyText").textContent);msg("keysMsg","Key copied.")}catch{msg("keysMsg","Select and copy the key text manually.")}};$("refreshKeys").onclick=loadKeys;
+async function loadApis(){let data;try{({items:data}=await apiAdmin("/api/admin/apis"))}catch(e){msg("apisMsg",e.message);return}$("apiCount").textContent=(data||[]).length;$("apisList").innerHTML="";(data||[]).forEach(a=>{const d=document.createElement("div");d.className="item";const left=document.createElement("div");left.textContent=a.name;const sm=document.createElement("small");sm.textContent=a.endpoint_url||"No endpoint metadata";left.append(sm);const right=document.createElement("div");right.className="row";const toggle=document.createElement("button");toggle.textContent=a.is_enabled?"Disable":"Enable";toggle.onclick=async()=>{try{await apiAdmin("/api/admin/apis",{method:"PATCH",body:JSON.stringify({id:a.id,is_enabled:!a.is_enabled})});await loadApis()}catch(e){msg("apisMsg",e.message)}};const del=document.createElement("button");del.textContent="Remove";del.onclick=async()=>{if(!confirm("Remove this integration record?"))return;try{await apiAdmin("/api/admin/apis?id="+encodeURIComponent(a.id),{method:"DELETE"});await loadApis()}catch(e){msg("apisMsg",e.message)}};right.append(toggle,del);d.append(left,right);$("apisList").append(d)})}
+$("addApi").onclick=async()=>{const name=$("apiName").value.trim(),endpoint_url=$("apiUrl").value.trim();if(!name){msg("apisMsg","Enter an integration name.");return}if(endpoint_url){try{const u=new URL(endpoint_url);if(u.protocol!=="https:")throw Error()}catch{msg("apisMsg","Use a valid HTTPS URL.");return}}try{await apiAdmin("/api/admin/apis",{method:"POST",body:JSON.stringify({name,endpoint_url:endpoint_url||null})});$("apiName").value="";$("apiUrl").value="";msg("apisMsg","Integration record saved disabled. No API calls are made yet.");loadApis()}catch(e){msg("apisMsg",e.message)}};$("refreshApis").onclick=loadApis;
+$("formatJson").onclick=()=>{try{const data=JSON.parse($("jsonInput").value);$("rawOutput").textContent=JSON.stringify(data,null,2);const rows=[];function walk(v,p=""){if(v&&typeof v==="object"){for(const [k,x] of Object.entries(v))walk(x,p?p+" / "+k:k)}else rows.push([p||"Value",String(v??"null")])}walk(data);$("formattedOutput").textContent=rows.length?rows.map(([k,v])=>k.toUpperCase()+"\n"+v).join("\n\n"):"Valid JSON; no fields.";msg("jsonMsg",rows.length+" fields formatted locally.")}catch(e){msg("jsonMsg","Invalid JSON: "+e.message)}};$("clearJson").onclick=()=>{$("jsonInput").value="";$("rawOutput").textContent="Waiting for JSON…";$("formattedOutput").textContent="Waiting for JSON…";msg("jsonMsg","")};
+if(sb){sb.auth.getSession().then(({data})=>{if(data.session)loadDashboard()})}
 </script>
-</body>
-</html>
+</body></html>

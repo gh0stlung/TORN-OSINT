@@ -1,10 +1,1 @@
-{
-  "name": "TORN Number Lookup Console",
-  "short_name": "TORN",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#080808",
-  "orientation": "portrait-primary",
-  "icons": []
-}
+{"name":"TORN_D Secure Console","short_name":"TORN_D","start_url":"./","display":"standalone","background_color":"#070707","theme_color":"#070707","orientation":"portrait-primary","icons":[]}
