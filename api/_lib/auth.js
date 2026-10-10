@@ -1,36 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
-
-export async function requireAdmin(req, res) {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) {
-    res.status(503).json({ error: "Backend configuration missing" });
-    return null;
-  }
-  const auth = req.headers.authorization || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) {
-    res.status(401).json({ error: "Sign in required" });
-    return null;
-  }
-  const supabase = createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  });
-  const { data: userResult, error: userError } = await supabase.auth.getUser(token);
-  if (userError || !userResult?.user) {
-    res.status(401).json({ error: "Invalid or expired session" });
-    return null;
-  }
-  const { data: profile, error } = await supabase
-    .from("profiles").select("role,is_active").eq("id", userResult.user.id).maybeSingle();
-  if (error) {
-    res.status(500).json({ error: "Could not verify admin role" });
-    return null;
-  }
-  if (!profile || profile.role !== "admin" || profile.is_active !== true) {
-    res.status(403).json({ error: "Active admin access required" });
-    return null;
-  }
-  return { supabase, user: userResult.user };
-}
+import { createClient } from '@supabase/supabase-js';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+const b64 = x => Buffer.from(x).toString('base64url');
+export function makeToken() { const payload=b64(JSON.stringify({role:'admin',exp:Date.now()+8*60*60*1000})); const sig=createHmac('sha256',process.env.TORND_SESSION_SECRET||'').update(payload).digest('base64url'); return payload+'.'+sig; }
+function validToken(token){try{const [p,s]=token.split('.');const expected=createHmac('sha256',process.env.TORND_SESSION_SECRET||'').update(p).digest();const actual=Buffer.from(s,'base64url');if(expected.length!==actual.length||!timingSafeEqual(expected,actual))return false;const data=JSON.parse(Buffer.from(p,'base64url').toString());return data.role==='admin'&&data.exp>Date.now()}catch{return false}}
+export async function requireAdmin(req,res){const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!process.env.TORND_SESSION_SECRET||!process.env.SUPABASE_URL||!process.env.SUPABASE_SERVICE_ROLE_KEY){res.status(503).json({error:'Server environment variables are missing'});return null}if(!validToken(token)){res.status(401).json({error:'Admin session expired. Enter your admin superkey again.'});return null}const supabase=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});return {supabase,user:{id:null,email:'Admin superkey'}}}
+export { validToken };
