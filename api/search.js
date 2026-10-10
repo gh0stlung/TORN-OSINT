@@ -12,7 +12,14 @@ function safeEndpoint(raw, query) {
   const host = url.hostname.toLowerCase();
   if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host === "metadata.google.internal") throw new Error("Local/private endpoints are not allowed");
   if (/^(127\.|10\.|192\.168\.|169\.254\.)/.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host) || host === "0.0.0.0" || host === "::1") throw new Error("Local/private IP endpoints are not allowed");
-  if (!hasPlaceholder) url.searchParams.set("query", query);
+  if (!hasPlaceholder) {
+    // If the admin saved a template such as ?key=API_KEY&mobile=,
+    // fill that empty input parameter instead of incorrectly adding ?query=.
+    const preferred = ["mobile", "number", "phone", "query", "q", "email", "id", "value", "search"];
+    const emptyParam = preferred.find(name => url.searchParams.has(name) && url.searchParams.get(name) === "");
+    if (emptyParam) url.searchParams.set(emptyParam, query);
+    else url.searchParams.set("query", query);
+  }
   return url;
 }
 
