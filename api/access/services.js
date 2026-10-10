@@ -1,5 +1,21 @@
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+
+const FEATURE_META = {
+  number: { label: "📱 Number info" },
+  email: { label: "📧 Email info" },
+  aadhar: { label: "🪪 Aadhaar / ID" },
+  custom: { label: "⚙️ Custom tools" }
+};
+function getTag(name) {
+  const match = String(name || "").match(/^([a-z0-9_-]+)\s*::\s*/i);
+  if (match) return match[1].toLowerCase();
+  const n = String(name || "").toLowerCase();
+  if (/number|\bnum\b|phone|mobile/.test(n)) return "number";
+  if (/email/.test(n)) return "email";
+  if (/aadhar|aadhaar|identity/.test(n)) return "aadhar";
+  return "custom";
+}
 export default async function handler(req, res) {
   if (req.method !== "GET") { res.setHeader("Allow", "GET"); return res.status(405).json({ error: "Method not allowed" }); }
   const key = String(req.headers["x-tornd-key"] || "").trim();
@@ -11,8 +27,13 @@ export default async function handler(req, res) {
   if (!access || !access.is_active || (!access.is_permanent && (!access.expires_at || new Date(access.expires_at) <= new Date()))) return res.status(401).json({ error: "Invalid, revoked, or expired access key" });
   const { data, error } = await supabase.from("api_sources").select("name,is_enabled").eq("is_enabled", true).order("name");
   if (error) return res.status(500).json({ error: "Could not load API services" });
+  const seen = new Set();
   const services = [];
-  if ((data || []).some(x => /number|\bnum\b|phone|mobile/i.test(x.name || ""))) services.push({ value: "number", label: "📱 Number info" });
-  if ((data || []).length) services.push({ value: "custom", label: "⚙️ All enabled APIs" });
+  for (const item of data || []) {
+    const value = getTag(item.name);
+    if (seen.has(value)) continue;
+    seen.add(value);
+    services.push({ value, label: FEATURE_META[value]?.label || `🔎 ${value.replace(/[-_]/g, " ").replace(/\b\w/g, c => c.toUpperCase())}` });
+  }
   return res.status(200).json({ services });
 }
